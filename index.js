@@ -1,8 +1,10 @@
 import http from 'node:http';
 import { URL } from 'node:url';
 import { readFile } from 'node:fs/promises';
+import { exec } from 'node:child_process'; // Para ejecutar el seed automáticamente
 import { getConnection } from './db.js';
 
+// PORT dinámico para Render
 const PORT = process.env.PORT || 3000;
 
 const server = http.createServer(async (req, res) => {
@@ -10,11 +12,12 @@ const server = http.createServer(async (req, res) => {
     const pathname = parsedUrl.pathname;
     const searchParams = parsedUrl.searchParams;
 
-    // Headers Globales (CORS)
+    // Headers Globales (CORS para que cualquier Front pueda consumirlo)
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Content-Type', 'application/json');
 
+    // Manejo de Preflight (OPTIONS)
     if (req.method === 'OPTIONS') {
         res.writeHead(204);
         res.end();
@@ -45,7 +48,7 @@ const server = http.createServer(async (req, res) => {
             let query = "SELECT * FROM pokemones";
             let params = [];
 
-            // PostgreSQL usa $1, $2 en lugar de ?
+            // Lógica Senior: Parámetros numerados para PostgreSQL ($1, $2...)
             if (id) {
                 query += " WHERE id = $1";
                 params.push(id);
@@ -56,11 +59,11 @@ const server = http.createServer(async (req, res) => {
                 query += " ORDER BY id ASC LIMIT 10";
             }
 
-            // El driver 'pg' devuelve el resultado en la propiedad .rows
+            // Ejecución con el driver 'pg'
             const response = await client.query(query, params);
             const rows = response.rows;
             
-            // Mapeo para asegurar que 'tipos' sea un objeto JSON
+            // Mapeo: Si 'tipos' viene como string (JSON), lo parseamos a objeto
             const result = rows.map(p => ({
                 ...p,
                 tipos: typeof p.tipos === 'string' ? JSON.parse(p.tipos) : p.tipos
@@ -77,7 +80,7 @@ const server = http.createServer(async (req, res) => {
             res.writeHead(500);
             res.end(JSON.stringify({ error: "DB Error", message: err.message }));
         } finally {
-            if (client) client.release(); // Importante liberar el cliente al pool
+            if (client) client.release(); // Liberar conexión al pool
         }
     } else {
         res.writeHead(404);
@@ -85,6 +88,21 @@ const server = http.createServer(async (req, res) => {
     }
 });
 
+// Arrancar el servidor
 server.listen(PORT, () => {
-    console.log(`Servidor Senior activo en puerto ${PORT}`);
+    console.log(`🚀 Servidor Senior activo en puerto ${PORT}`);
+    
+    // --- WORKAROUND PARA PLANES GRATUITOS ---
+    // Ejecutamos el seed automáticamente al iniciar el servidor
+    console.log("🛠️  Iniciando Seed automático en la nube...");
+    exec('node seed.js', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`❌ Error en Seed: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.warn(`⚠️ Log de Seed: ${stderr}`);
+        }
+        console.log(`✅ Resultado del Seed: ${stdout}`);
+    });
 });
