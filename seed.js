@@ -1,13 +1,12 @@
 import { getConnection } from './db.js';
 
 async function seed() {
-    let conn;
+    let client;
     try {
-        conn = await getConnection();
+        client = await getConnection();
         
-        // OPCIONAL: Limpiar la tabla antes de insertar (Senior Tip)
-        // RESTART IDENTITY resetea el contador del ID a 1
-        await conn.query("TRUNCATE TABLE pokemones RESTART IDENTITY");
+        console.log("Limpiando tabla...");
+        await client.query("TRUNCATE TABLE pokemones RESTART IDENTITY");
 
         const pokemones = [
             ['bulbasaur', 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png', 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/1.png', 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/1.png', 7, 69, JSON.stringify(['grass', 'poison'])],
@@ -22,22 +21,21 @@ async function seed() {
             ['caterpie', 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10.png', 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/10.png', 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/10.png', 3, 29, JSON.stringify(['bug'])]
         ];
 
-        // NOTA: Cambiamos "?" por "$1, $2, $3..." para PostgreSQL
         const query = `
             INSERT INTO pokemones 
             (nombre, imagen_frontal, imagen_posterior, imagen_shiny, altura, peso, tipos) 
             VALUES ($1, $2, $3, $4, $5, $6, $7)
         `;
         
-        for (const pokemon of pokemones) {
-            await conn.query(query, pokemon);
+        for (const p of pokemones) {
+            await client.query(query, p);
         }
 
         console.log("Seed completado con éxito en Supabase.");
     } catch (err) {
         console.error("Error en el seed:", err);
     } finally {
-        if (conn) conn.release();
+        if (client) client.release();
         process.exit();
     }
 }
