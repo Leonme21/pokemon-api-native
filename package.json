@@ -1,0 +1,19 @@
+{
+  "name": "pokemon-api-native",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "API Nativa de Pokémones sin frameworks",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node --watch index.js",
+    "seed": "node seed.js",
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "Miguel",
+  "license": "ISC",
+  "dependencies": {
+    "mariadb": "^3.5.2",
+    "pg": "^8.20.0"
+  }
+}

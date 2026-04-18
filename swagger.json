@@ -1,0 +1,49 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Pokedex API Nativa",
+    "description": "API de Pokemones construida con Node.js puro y MariaDB/PostgreSQL",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor Local"
+    }
+  ],
+  "paths": {
+    "/api/pokemones": {
+      "get": {
+        "summary": "Obtiene la lista de pokemones o uno específico",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "ID numérico del pokemon",
+            "required": false,
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "nombre",
+            "in": "query",
+            "description": "Nombre del pokemon",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Operación exitosa" },
+          "404": { "description": "Pokemon no encontrado" }
+        }
+      }
+    },
+    "/api/docs": {
+      "get": {
+        "summary": "Obtiene el JSON de especificación Swagger",
+        "responses": {
+          "200": { "description": "Documentación técnica" }
+        }
+      }
+    }
+  }
+}
